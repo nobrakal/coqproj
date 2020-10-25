@@ -28,7 +28,7 @@ Inductive deriv:context -> form -> Prop :=
 | AllI : forall A (G:context) p, (forall a, deriv G (p a)) -> deriv G (@All A p)
 | AllE : forall A (G:context) p a, deriv G (@All A p) -> deriv G (p a)
 | ExI  : forall A (G:context) p a, deriv G (p a) -> deriv G (@Ex A p)
-| ExE  : forall A (G:context) p a q, deriv G (@Ex A p) -> deriv (extend G (p a)) q -> deriv G q.
+| ExE  : forall A (G:context) p q, deriv G (@Ex A p) -> (forall a, deriv (extend G (p a)) q) -> deriv G q.
 
 Create HintDb derivdb.
 Hint Constructors deriv : derivdb.
@@ -37,16 +37,26 @@ Definition classical := fun hyp => exists A:form, hyp = Or A (Impl A Fa).
 
 Definition empty A := fun (_:A) => True.
 
+Definition neg := fun x => Impl x Fa.
+
 Lemma drinker (bar:Type) (barfly:bar) (drinks:bar->Prop) :
   deriv classical (Ex (fun p =>Impl (Atom (drinks p)) (All (fun q => Atom (drinks q))))).
 Proof.
-  apply OrE with (p:=(All (fun p => Atom (drinks p)))) (q:= Impl (All (fun p => Atom (drinks p))) Fa).
+  apply OrE with (p:=(All (fun p => Atom (drinks p)))) (q:= neg (All (fun p => Atom (drinks p)))).
   - apply Ax. exists ((All (fun p => Atom (drinks p)))); easy.
   - apply ExI with (a:=barfly).
     apply ImplI, Ax.
     right; left.
     easy.
-  - admit.
+  - apply ImplE with (p:=Ex (fun x => Impl (Atom (drinks x)) Fa)). (* There exists someone not drinking *)
+    + apply ImplI.
+      apply ExE with _ (fun x : bar => Impl (Atom (drinks x)) Fa).
+      * apply Ax; left; easy.
+      * intros a.
+        apply ExI with a.
+        apply ImplI, FaE.
+        apply ImplE with (p:=(Atom (drinks a))); apply Ax; [right; left | left] ; easy.
+    + admit.
 Admitted.
 
 Definition Included (X Y: context) := forall a, X a -> Y a.
@@ -65,9 +75,9 @@ Proof.
   3-7:eauto with derivdb.
   - apply OrE with p q; firstorder.
   - now apply ImplI, IHderiv, extend_mon_Included.
-  - apply ExE with A p a.
-    + now apply IHderiv1.
-    + now apply IHderiv2, extend_mon_Included.
+  - apply ExE with A p.
+    + now apply IHderiv.
+    + intros a; now apply H1 with a, extend_mon_Included.
 Qed.
 
 Definition ProvableFrom (L L':context) := forall f, L f -> deriv L' f.
@@ -92,8 +102,7 @@ Proof.
     + now apply IHderiv3, extend_mon_ProvableFrom.
   - apply ImplI, IHderiv.
     now apply extend_mon_ProvableFrom.
-  - apply ExE with A p a.
-    + now apply IHderiv1.
-    + apply IHderiv2.
-      now apply extend_mon_ProvableFrom.
+  - apply ExE with A p.
+    + now apply IHderiv.
+    + intros a; now apply H1 with a, extend_mon_ProvableFrom.
 Qed.
