@@ -152,7 +152,12 @@ Proof.
       apply ImplI.
       harrow (nnt f2).
       apply AndER with (p:= nnt f1); axiom.
-  - admit.
+  - apply extend_context with (p:=(neg (neg (neg (neg (Or (nnt f1) (nnt f2))))))); try easy.
+    apply ImplI.
+    harrow (neg (neg (neg (Or (nnt f1) (nnt f2))))).
+    apply ImplI.
+    harrow (neg (Or (nnt f1) (nnt f2))).
+    axiom.
   - apply extend_context with (p:=(neg (neg (Impl (nnt f1) (nnt f2))))); try easy.
     apply ImplI, IHf2, ImplI.
     harrow (neg (Impl (nnt f1) (nnt f2))).
@@ -160,8 +165,7 @@ Proof.
     harrow (nnt f2); harrow (nnt f1); axiom.
   - apply extend_context with (p:=(neg (neg (All (fun x : A => nnt (f x)))))); try easy.
     apply AllI; intros a.
-    apply H.
-    apply ImplI.
+    apply H, ImplI.
     harrow (neg (All (fun x : A => nnt (f x)))).
     apply ImplI.
     harrow (nnt (f a)).
