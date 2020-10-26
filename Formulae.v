@@ -137,3 +137,25 @@ Proof.
   - admit.
   - admit.
 Admitted.
+
+Definition nnt_context L := fun p => exists p', p=nnt p' /\ L p'.
+
+Lemma ntt_soundness L f : deriv L f -> deriv (nnt_context L) (nnt f).
+Proof.
+  induction 1.
+  - eauto with derivdb.
+  - eauto with derivdb.
+  - apply Ax; exists x; easy.
+  - eauto with derivdb.
+  - eauto with derivdb.
+  - eauto with derivdb.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - eauto with derivdb.
+  - eauto with derivdb.
+  - admit.
+  - admit.
+  - admit.
+Admitted.
