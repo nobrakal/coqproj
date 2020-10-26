@@ -120,7 +120,7 @@ Fixpoint nnt (x:form) :=
 
 Lemma double_elimination L f : deriv L (neg (neg (nnt f))) -> deriv L (nnt f).
 Proof.
-  intros H; induction f; simpl in *.
+  revert L; induction f; intros L D; simpl in *.
   - eauto with derivdb.
   - apply deriv_substitution with (L:= extend L (neg (neg Fa))).
     + apply ImplE with (p:=neg Fa).
@@ -128,7 +128,7 @@ Proof.
       * apply ImplI, Ax; left; easy.
     + intros f E.
       destruct E.
-      * now destruct H0.
+      * now destruct H.
       * now apply Ax.
   - admit.
   - admit.
