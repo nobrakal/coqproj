@@ -48,9 +48,9 @@ Proof.
     apply ImplI, Ax.
     right; left.
     easy.
-  - apply ImplE with (p:=Ex (fun x => Impl (Atom (drinks x)) Fa)). (* There exists someone not drinking *)
+  - apply ImplE with (p:=Ex (fun x => neg (Atom (drinks x)))). (* There exists someone not drinking *)
     + apply ImplI.
-      apply ExE with _ (fun x : bar => Impl (Atom (drinks x)) Fa).
+      apply ExE with _ (fun x : bar => neg (Atom (drinks x))).
       * apply Ax; left; easy.
       * intros a.
         apply ExI with a.
@@ -106,3 +106,34 @@ Proof.
     + now apply IHderiv.
     + intros a; now apply H1 with a, extend_mon_ProvableFrom.
 Qed.
+
+Fixpoint nnt (x:form) :=
+  match x with
+  | Tr => Tr
+  | Fa => Fa
+  | Atom x => neg (neg (Atom x))
+  | And x y => And (nnt x) (nnt y)
+  | Or x y => neg (neg (Or (nnt x) (nnt y)))
+  | Impl x y => Impl (nnt x) (nnt y)
+  | All p => All (fun x => nnt (p x))
+  | Ex p => neg (neg (Ex (fun x => nnt (p x)))) end.
+
+Lemma double_elimination L f : deriv L (neg (neg (nnt f))) -> deriv L (nnt f).
+Proof.
+  intros H; induction f; simpl in *.
+  - eauto with derivdb.
+  - apply deriv_substitution with (L:= extend L (neg (neg Fa))).
+    + apply ImplE with (p:=neg Fa).
+      * apply Ax; left; easy.
+      * apply ImplI, Ax; left; easy.
+    + intros f E.
+      destruct E.
+      * now destruct H0.
+      * now apply Ax.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+Admitted.
