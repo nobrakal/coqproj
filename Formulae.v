@@ -165,7 +165,8 @@ Proof.
     harrow (neg (All (fun x : A => nnt (f x)))).
     apply ImplI.
     harrow (nnt (f a)).
-    admit.
+    apply AllE with (p:= fun x => nnt (f x)).
+    axiom.
   - admit.
   - apply extend_context with (neg (neg (neg (neg (Atom P))))); try easy.
     apply ImplI.
