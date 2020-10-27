@@ -314,8 +314,10 @@ Fixpoint intf f : Prop :=
   | Ex p => exists x, intf (p x)
   | Atom X => X end.
 
+(* A predicated to say that the context is sound. *)
 Definition sound_context (G:context) := forall x, G x -> intf x.
 
+(* Extending a sound context with a sound formula is sound. *)
 Lemma sound_extend L p : sound_context L -> intf p -> sound_context (extend L p).
 Proof.
   intros S I x U; destruct U; [destruct H; easy | firstorder].
