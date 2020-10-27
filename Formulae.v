@@ -286,11 +286,5 @@ Qed.
 Lemma intf_sound L f : sound_context L -> deriv L f -> intf f.
 Proof.
   intros H D.
-  induction D; firstorder.
-  - now apply IHD2, sound_extend.
-  - now apply IHD3, sound_extend.
-  - intros u.
-    now apply IHD, sound_extend.
-  - specialize H1 with x.
-    now apply H1, sound_extend.
+  induction D; firstorder using sound_extend.
 Qed.
