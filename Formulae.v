@@ -271,11 +271,16 @@ Proof. firstorder. Qed.
 Lemma excluded_middle_elim L f : deriv (union classic L) f -> deriv (nnt_context L) (nnt f).
 Proof.
   intros H.
-  (* Is this the good idea ?*)
   apply deriv_substitution with (L:=nnt_context (union classic L)).
   - now apply ntt_soundness.
-  - admit.
-Admitted.
+  - intros x E.
+    apply nnt_context_union in E.
+    destruct E.
+    + destruct H0 as (y,(E,Hy)); symmetry in E; destruct E.
+      destruct Hy.
+      apply nnt_classic.
+    + now apply Ax.
+Qed.
 
 Inductive equality (A:Type) : form -> Prop :=
 | Reflexivity : equality A (All (fun x:A => Atom (x=x)))
