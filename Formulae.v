@@ -208,12 +208,10 @@ Qed.
 Lemma ntt_soundness L f : deriv L f -> deriv (nnt_context L) (nnt f).
 Proof.
   induction 1; simpl in *.
-  - eauto with derivdb.
-  - eauto with derivdb.
+  1-2:eauto with derivdb.
+  2-4:eauto with derivdb.
+  6-7:eauto with derivdb.
   - apply Ax; exists x; easy.
-  - eauto with derivdb.
-  - eauto with derivdb.
-  - eauto with derivdb.
   - apply ImplI; harrow (Or (nnt p) (nnt q)); apply OrIL with (q:= (nnt q)).
     apply deriv_weakening with (L:=nnt_context G); firstorder.
   - apply ImplI; harrow (Or (nnt p) (nnt q)); apply OrIR with (p:= (nnt p)).
@@ -232,8 +230,6 @@ Proof.
       intros x E; apply nnt_context_extend in E; firstorder.
   - apply ImplI.
     apply replace_context with (nnt_context (extend G p)); [apply nnt_context_extend | easy].
-  - eauto with derivdb.
-  - eauto with derivdb.
   - apply extend_context with (All (fun x : A => nnt (p x))); try easy.
     apply AllE with (p:=(fun x : A => nnt (p x))).
     axiom.
