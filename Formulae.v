@@ -303,6 +303,7 @@ Inductive equality (A:Type) : form -> Prop :=
 | Symmetry : equality A (All (fun x:A => All (fun y => Impl (x == y) (y == x))))
 | Transitivity : equality A (All (fun x:A =>All (fun y => All (fun z => Impl (x == y) (Impl (y == z) (x == z)))))).
 
+(** 5.1.1 *)
 Fixpoint intf f : Prop :=
   match f with
   | Tr => True
@@ -314,7 +315,7 @@ Fixpoint intf f : Prop :=
   | Ex p => exists x, intf (p x)
   | Atom X => X end.
 
-(* A predicated to say that the context is sound. *)
+(* A predicate to say that the context is sound. *)
 Definition sound_context (G:context) := forall x, G x -> intf x.
 
 (* Extending a sound context with a sound formula is sound. *)
@@ -323,8 +324,21 @@ Proof.
   intros S I x U; destruct U; [destruct H; easy | firstorder].
 Qed.
 
+(** 5.2.1 *)
 Lemma intf_sound L f : sound_context L -> deriv L f -> intf f.
 Proof.
   intros H D.
   induction D; firstorder using sound_extend.
+Qed.
+
+(** 5.3.1.1 *)
+Lemma sound_equality A : sound_context (equality A).
+Proof.
+  intros x Ex.
+  destruct Ex.
+  - easy.
+  - intros x y H.
+    now destruct H.
+  - intros x y z E1 E2.
+    now destruct E1,E2.
 Qed.
