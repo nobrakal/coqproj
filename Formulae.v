@@ -8,10 +8,13 @@ Inductive form :=
 | Ex {A:Type} (_:A->form) (* Existential quantifier *)
 | Atom (_:Prop) (* Atomic propositions *).
 
+(* We give a name to the context *)
 Definition context := form -> Prop.
 
+(* We can extend a context G by adding a proposition p *)
 Definition extend (G:context) (x:form) : context := fun y => x = y \/ G y.
 
+(** 1.1.1 *)
 Inductive deriv:context -> form -> Prop :=
 | TrI : forall (G:context), deriv G Tr
 | FaE : forall (G:context) phi, deriv G Fa -> deriv G phi
@@ -33,15 +36,16 @@ Inductive deriv:context -> form -> Prop :=
 Create HintDb derivdb.
 Hint Constructors deriv : derivdb.
 
+(* Very small tactics allowing to search in the context for a given hypothesis. *)
 Ltac explore_context := repeat ((left; easy) + right).
 Ltac axiom := apply Ax; explore_context.
 
 Definition classical := fun hyp => exists A:form, hyp = Or A (Impl A Fa).
 
-Definition empty : context := fun _ => False.
-
+(* The negation *)
 Definition neg := fun x => Impl x Fa.
 
+(** 1.1.2 *)
 Lemma drinker (bar:Type) (barfly:bar) (drinks:bar->Prop) :
   deriv classical (Ex (fun p =>Impl (Atom (drinks p)) (All (fun q => Atom (drinks q))))).
 Proof.
@@ -60,15 +64,19 @@ Proof.
     + admit.
 Admitted.
 
+(* The inclusion of contexts. Useful to state intermediate lemmas. *)
 Definition Included (X Y: context) := forall a, X a -> Y a.
 
 Lemma Included_extend X p: Included X (extend X p).
 Proof. firstorder. Qed.
 
+(* extend is monotonic w.r.t the inclusion *)
 Lemma extend_mon_Included X Y p: Included X Y -> Included (extend X p) (extend Y p).
 Proof.
   intros H x R; destruct R; firstorder.
 Qed.
+
+(** 1.2.1 *)
 Lemma deriv_weakening (L L':context) f : deriv L f -> Included L L' -> deriv L' f.
 Proof.
   intros H; revert L'; induction H; intros L' I; eauto using extend_mon_Included with derivdb.
@@ -86,6 +94,7 @@ Proof.
     + apply Included_extend.
 Qed.
 
+(** 1.2.2 *)
 Lemma deriv_substitution (L L':context) f : deriv L f -> ProvableFrom L L' -> deriv L' f.
 Proof.
   intros H; revert L'; induction H; intros L' I; eauto using extend_mon_ProvableFrom with derivdb.
@@ -95,6 +104,7 @@ Proof.
   - now apply IHderiv3, extend_mon_ProvableFrom.
 Qed.
 
+(** 2.1.1 *)
 Fixpoint nnt (x:form) :=
   match x with
   | Tr => Tr
@@ -120,6 +130,7 @@ Qed.
 (* Apply an arrow that is in the context *)
 Ltac harrow p := apply ImplE with p; only 1:axiom.
 
+(** 2.2.1 *)
 Lemma double_elimination L f : deriv L (neg (neg (nnt f))) -> deriv L (nnt f).
 Proof.
   revert L; induction f; intros L D; simpl in *.
@@ -192,6 +203,7 @@ Proof.
   apply deriv_weakening with L; try easy; firstorder.
 Qed.
 
+(** 2.2.2 *)
 Lemma ntt_soundness L f : deriv L f -> deriv (nnt_context L) (nnt f).
 Proof.
   induction 1; simpl in *.
@@ -248,6 +260,7 @@ Proof.
   - apply OrIR; axiom.
 Qed.
 
+(** 3.1.1 *)
 Lemma nnt_classic L P: deriv L (nnt (Or P (Impl P Fa))).
 Proof.
   simpl; apply ImplI.
@@ -268,6 +281,7 @@ Lemma nnt_context_union L L' :
   EquivContext (nnt_context (union L L')) (union (nnt_context L) (nnt_context L')).
 Proof. firstorder. Qed.
 
+(** 3.2.1 *)
 Lemma excluded_middle_elim L f : deriv (union classic L) f -> deriv (nnt_context L) (nnt f).
 Proof.
   intros H.
@@ -282,10 +296,12 @@ Proof.
     + now apply Ax.
 Qed.
 
+Notation "a == b" := (Atom (a = b)) (at level 90).
+
 Inductive equality (A:Type) : form -> Prop :=
-| Reflexivity : equality A (All (fun x:A => Atom (x=x)))
-| Symmetry : equality A (All (fun x:A => All (fun y => Impl (Atom (x=y)) (Atom (y=x)))))
-| Transitivity : equality A (All (fun x:A =>All (fun y => All (fun z => Impl (Atom (x=y)) (Impl (Atom (y=z)) (Atom (x=z))))) )).
+| Reflexivity : equality A (All (fun x:A => x == x))
+| Symmetry : equality A (All (fun x:A => All (fun y => Impl (x == y) (y == x))))
+| Transitivity : equality A (All (fun x:A =>All (fun y => All (fun z => Impl (x == y) (Impl (y == z) (x == z)))))).
 
 Fixpoint intf f : Prop :=
   match f with
