@@ -275,3 +275,22 @@ Fixpoint intf f : Prop :=
   | All p => forall x, intf (p x)
   | Ex p => exists x, intf (p x)
   | Atom X => X end.
+
+Definition sound_context (G:context) := forall x, G x -> intf x.
+
+Lemma sound_extend L p : sound_context L -> intf p -> sound_context (extend L p).
+Proof.
+  intros S I x U; destruct U; [destruct H; easy | firstorder].
+Qed.
+
+Lemma intf_sound L f : sound_context L -> deriv L f -> intf f.
+Proof.
+  intros H D.
+  induction D; firstorder.
+  - now apply IHD2, sound_extend.
+  - now apply IHD3, sound_extend.
+  - intros u.
+    now apply IHD, sound_extend.
+  - specialize H1 with x.
+    now apply H1, sound_extend.
+Qed.
