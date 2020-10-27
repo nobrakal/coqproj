@@ -38,7 +38,7 @@ Ltac axiom := apply Ax; explore_context.
 
 Definition classical := fun hyp => exists A:form, hyp = Or A (Impl A Fa).
 
-Definition empty A := fun (_:A) => True.
+Definition empty : context := fun _ => False.
 
 Definition neg := fun x => Impl x Fa.
 
@@ -241,10 +241,40 @@ Qed.
 Inductive classic : form -> Prop :=
   Cem P : classic (Or P (Impl P Fa)).
 
+Lemma neg_or L A B : deriv L (Impl (neg (Or A B)) (And (neg A) (neg B))).
+Proof.
+  apply ImplI, AndI; apply ImplI; harrow (Or A B).
+  - apply OrIL; axiom.
+  - apply OrIR; axiom.
+Qed.
+
+Lemma nnt_classic L P: deriv L (nnt (Or P (Impl P Fa))).
+Proof.
+  simpl; apply ImplI.
+  harrow (Or (nnt P) (Impl (nnt P) Fa)).
+  apply extend_context with (And (neg (nnt P)) (neg (neg (nnt P)))).
+  - apply ImplE with (p:=neg (Or (nnt P) (neg (nnt P)))).
+    apply neg_or.
+    axiom.
+  - apply OrIL.
+    apply double_elimination.
+    apply AndER with (p:=neg (nnt P)).
+    axiom.
+Qed.
+
 Definition union (L L' : context) := fun y => L y \/ L' y.
+
+Lemma nnt_context_union L L' :
+  EquivContext (nnt_context (union L L')) (union (nnt_context L) (nnt_context L')).
+Proof. firstorder. Qed.
 
 Lemma excluded_middle_elim L f : deriv (union classic L) f -> deriv (nnt_context L) (nnt f).
 Proof.
+  intros H.
+  (* Is this the good idea ?*)
+  apply deriv_substitution with (L:=nnt_context (union classic L)).
+  - now apply ntt_soundness.
+  - admit.
 Admitted.
 
 Inductive equality (A:Type) : form -> Prop :=
