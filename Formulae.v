@@ -264,3 +264,14 @@ Inductive equality (A:Type) : form -> Prop :=
 | Reflexivity : equality A (All (fun x:A => Atom (x=x)))
 | Symmetry : equality A (All (fun x:A => All (fun y => Impl (Atom (x=y)) (Atom (y=x)))))
 | Transitivity : equality A (All (fun x:A =>All (fun y => All (fun z => Impl (Atom (x=y)) (Impl (Atom (y=z)) (Atom (x=z))))) )).
+
+Fixpoint intf f : Prop :=
+  match f with
+  | Tr => True
+  | Fa => False
+  | And x y => intf x /\ intf y
+  | Or x y => intf x \/ intf y
+  | Impl x y => intf x -> intf y
+  | All p => forall x, intf (p x)
+  | Ex p => exists x, intf (p x)
+  | Atom X => X end.
