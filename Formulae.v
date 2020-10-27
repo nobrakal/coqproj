@@ -171,7 +171,12 @@ Proof.
     harrow (nnt (f a)).
     apply AllE with (p:= fun x => nnt (f x)).
     axiom.
-  - admit.
+  - apply extend_context with (neg (neg (neg (neg (Ex (fun x : A => nnt (f x))))))); try easy.
+    apply ImplI.
+    harrow (neg (neg (neg (Ex (fun x : A => nnt (f x)))))).
+    apply ImplI.
+    harrow (neg (Ex (fun x : A => nnt (f x)))).
+    axiom.
   - apply extend_context with (neg (neg (neg (neg (Atom P))))); try easy.
     apply ImplI.
     harrow (neg (neg (neg (Atom P)))).
@@ -180,7 +185,7 @@ Proof.
     apply ImplI.
     harrow (Atom P).
     axiom.
-Admitted.
+Qed.
 
 Definition nnt_context L := fun p => exists p', p=nnt p' /\ L p'.
 
