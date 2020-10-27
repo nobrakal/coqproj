@@ -189,6 +189,22 @@ Qed.
 
 Definition nnt_context L := fun p => exists p', p=nnt p' /\ L p'.
 
+Definition EquivContext (X Y: context) := forall p, X p <-> Y p.
+
+Lemma nnt_context_extend L p : EquivContext (nnt_context (extend L p)) (extend (nnt_context L) (nnt p)).
+Proof.
+  intros x.
+  split.
+  - firstorder; destruct H0,H; firstorder.
+  - firstorder; destruct H; exists p; firstorder.
+Qed.
+
+Lemma replace_context L L' f: EquivContext L L' -> deriv L f -> deriv L' f.
+Proof.
+  intros E H.
+  apply deriv_weakening with L; try easy; firstorder.
+Qed.
+
 Lemma ntt_soundness L f : deriv L f -> deriv (nnt_context L) (nnt f).
 Proof.
   induction 1; simpl in *.
@@ -198,14 +214,25 @@ Proof.
   - eauto with derivdb.
   - eauto with derivdb.
   - eauto with derivdb.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - apply ImplI; harrow (Or (nnt p) (nnt q)); apply OrIL with (q:= (nnt q)).
+    apply deriv_weakening with (L:=nnt_context G); firstorder.
+  - apply ImplI; harrow (Or (nnt p) (nnt q)); apply OrIR with (p:= (nnt p)).
+    apply deriv_weakening with (L:=nnt_context G); firstorder.
+  - apply OrE with (p:=nnt p) (q:=nnt q).
+    + admit.
+    + apply replace_context with (nnt_context (extend G p)); [apply nnt_context_extend | easy].
+    + apply replace_context with (nnt_context (extend G q)); [apply nnt_context_extend | easy].
+  - apply ImplI.
+    apply replace_context with (nnt_context (extend G p)); [apply nnt_context_extend | easy].
   - eauto with derivdb.
   - eauto with derivdb.
-  - admit.
-  - admit.
+  - apply extend_context with (All (fun x : A => nnt (p x))); try easy.
+    apply AllE with (p:=(fun x : A => nnt (p x))).
+    axiom.
+  - apply extend_context with (nnt (p a)); try easy.
+    apply ImplI.
+    harrow (Ex (fun x : A => nnt (p x))).
+    apply ExI with a; axiom.
   - admit.
 Admitted.
 
