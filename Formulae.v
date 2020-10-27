@@ -71,14 +71,8 @@ Proof.
 Qed.
 Lemma deriv_weakening (L L':context) f : deriv L f -> Included L L' -> deriv L' f.
 Proof.
-  intros H; revert L'; induction H; intros L' I.
-  1-8:eauto with derivdb.
-  3-7:eauto with derivdb.
-  - apply OrE with p q; firstorder.
-  - now apply ImplI, IHderiv, extend_mon_Included.
-  - apply ExE with A p.
-    + now apply IHderiv.
-    + intros a; now apply H1 with a, extend_mon_Included.
+  intros H; revert L'; induction H; intros L' I; eauto using extend_mon_Included with derivdb.
+  apply OrE with p q; firstorder.
 Qed.
 
 Definition ProvableFrom (L L':context) := forall f, L f -> deriv L' f.
@@ -94,18 +88,11 @@ Qed.
 
 Lemma deriv_substitution (L L':context) f : deriv L f -> ProvableFrom L L' -> deriv L' f.
 Proof.
-  intros H; revert L'; induction H; intros L' I.
-  1-8:eauto with derivdb.
-  3-7:eauto with derivdb.
-  - apply OrE with p q.
-    + firstorder.
-    + now apply IHderiv2, extend_mon_ProvableFrom.
-    + now apply IHderiv3, extend_mon_ProvableFrom.
-  - apply ImplI, IHderiv.
-    now apply extend_mon_ProvableFrom.
-  - apply ExE with A p.
-    + now apply IHderiv.
-    + intros a; now apply H1 with a, extend_mon_ProvableFrom.
+  intros H; revert L'; induction H; intros L' I; eauto using extend_mon_ProvableFrom with derivdb.
+  apply OrE with p q.
+  - firstorder.
+  - now apply IHderiv2, extend_mon_ProvableFrom.
+  - now apply IHderiv3, extend_mon_ProvableFrom.
 Qed.
 
 Fixpoint nnt (x:form) :=
