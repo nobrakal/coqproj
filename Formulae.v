@@ -218,10 +218,18 @@ Proof.
     apply deriv_weakening with (L:=nnt_context G); firstorder.
   - apply ImplI; harrow (Or (nnt p) (nnt q)); apply OrIR with (p:= (nnt p)).
     apply deriv_weakening with (L:=nnt_context G); firstorder.
-  - apply OrE with (p:=nnt p) (q:=nnt q).
-    + admit.
-    + apply replace_context with (nnt_context (extend G p)); [apply nnt_context_extend | easy].
-    + apply replace_context with (nnt_context (extend G q)); [apply nnt_context_extend | easy].
+  - apply double_elimination.
+    apply extend_context with (neg (neg (Or (nnt p) (nnt q)))); try easy.
+    apply ImplI.
+    harrow (neg (Or (nnt p) (nnt q))).
+    apply ImplI.
+    harrow (nnt phi).
+    apply OrE with (p:=nnt p) (q:=nnt q).
+    + axiom.
+    + apply deriv_weakening with (nnt_context (extend G p)); try easy.
+      intros x E; apply nnt_context_extend in E; firstorder.
+    + apply deriv_weakening with (nnt_context (extend G q)); try easy.
+      intros x E; apply nnt_context_extend in E; firstorder.
   - apply ImplI.
     apply replace_context with (nnt_context (extend G p)); [apply nnt_context_extend | easy].
   - eauto with derivdb.
@@ -233,8 +241,19 @@ Proof.
     apply ImplI.
     harrow (Ex (fun x : A => nnt (p x))).
     apply ExI with a; axiom.
-  - admit.
-Admitted.
+  - apply double_elimination.
+    apply extend_context with (neg (neg (Ex (fun x : A => nnt (p x))))); try easy.
+    apply ImplI.
+    harrow (neg (Ex (fun x : A => nnt (p x)))).
+    apply ImplI.
+    harrow (nnt q).
+    apply ExE with (p:= fun x => nnt (p x)).
+    + axiom.
+    + intros a.
+      specialize H1 with a.
+      apply deriv_weakening with (nnt_context (extend G (p a))); try easy.
+      intros x E; apply nnt_context_extend in E; firstorder.
+Qed.
 
 Inductive classic : form -> Prop :=
   Cem P : classic (Or P (Impl P Fa)).
