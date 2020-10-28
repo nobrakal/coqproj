@@ -305,9 +305,14 @@ Qed.
 Notation "a == b" := (Atom (a = b)) (at level 90).
 
 Inductive equality (A:Type) : form -> Prop :=
-| Reflexivity : equality A (All (fun x:A => x == x))
-| Symmetry : equality A (All (fun x:A => All (fun y => Impl (x == y) (y == x))))
-| Transitivity : equality A (All (fun x:A =>All (fun y => All (fun z => Impl (x == y) (Impl (y == z) (x == z)))))).
+| Eq_refl : equality A (All (fun x:A => x == x))
+| Eq_sym : equality A (All (fun x:A => All (fun y => Impl (x == y) (y == x))))
+| Eq_trans : equality A (All (fun x:A =>All (fun y => All (fun z => Impl (x == y) (Impl (y == z) (x == z)))))).
+
+Inductive arith : form -> Prop :=
+| Arith_zero_n_succ : arith (All (fun n => neg (0 == S n)))
+| Arith_succ_inj : arith (All (fun n => All (fun m => Impl (S n == S m) (n == m))))
+| Arith_ind : arith (All (fun (P :nat -> Prop) => Impl (Atom (P 0)) (Impl (All (fun n =>  Impl (Atom (P n)) (Atom (P (S n))))) (All (fun n => Atom (P n)))))).
 
 (** 5.1.1 *)
 Fixpoint intf f : Prop :=
@@ -344,4 +349,15 @@ Proof.
   - easy.
   - now intros x y [].
   - now intros x y z [] [].
+Qed.
+
+(** 5.3.1.2 *)
+Lemma sound_arith : sound_context arith.
+Proof.
+  intros x Ex.
+  destruct Ex.
+  - easy.
+  - intros x y H; injection H; easy.
+  - intros P P0 PS n.
+    induction n; firstorder.
 Qed.
