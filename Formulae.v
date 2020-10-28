@@ -29,7 +29,7 @@ Inductive deriv:context -> form -> Prop :=
 | ImplI : forall (G:context) p q, deriv (extend G p) q -> deriv G (Impl p q)
 | ImplE : forall (G:context) p q, deriv G (Impl p q) -> deriv G p -> deriv G q
 | AllI : forall (G:context) A p, (forall a, deriv G (p a)) -> deriv G (@All A p)
-| AllE : forall (G:context) A p, deriv G (@All A p) -> forall a, deriv G (p a)
+| AllE : forall (G:context) A p a, deriv G (@All A p) -> deriv G (p a)
 | ExI  : forall (G:context) A p a, deriv G (p a) -> deriv G (@Ex A p)
 | ExE  : forall (G:context) A p q, deriv G (@Ex A p) -> (forall a, deriv (extend G (p a)) q) -> deriv G q.
 
@@ -314,6 +314,71 @@ Inductive arith : form -> Prop :=
 | Arith_succ_inj : arith (All (fun n => All (fun m => Impl (S n == S m) (n == m))))
 | Arith_ind : arith (All (fun (P :nat -> Prop) => Impl (Atom (P 0)) (Impl (All (fun n =>  Impl (Atom (P n)) (Atom (P (S n))))) (All (fun n => Atom (P n)))))).
 
+Definition heyting := union arith (equality nat).
+Definition peano := union classic heyting.
+
+Lemma remove_negneg L f : deriv L f -> deriv L (neg (neg f)).
+Proof.
+  intros H.
+  apply ImplI; harrow f.
+  apply deriv_weakening with L; firstorder.
+Qed.
+
+(** 4.2.1 *)
+Lemma equality_nnt A f: equality A f -> deriv (equality A) (nnt f).
+Proof.
+  intros H; destruct H.
+  - apply AllI; intros a.
+    apply remove_negneg.
+    apply AllE with (p:= fun x => x == x).
+    axiom.
+    apply Eq_refl.
+  - apply AllI; intros x; apply AllI; intros y.
+    apply ImplI, ImplI.
+    harrow (neg (x==y)).
+    apply ImplI.
+    harrow (y == x).
+    apply ImplE with (x == y).
+    + apply AllE with (p:=(fun y => Impl (x == y) (y == x))).
+      apply AllE with (p:=(fun x:A => All (fun y => Impl (x == y) (y == x)))).
+      axiom.
+      apply Eq_sym.
+    + axiom.
+  - apply AllI; intros x; apply AllI; intros y; apply AllI; intros z.
+    apply ImplI, ImplI, ImplI.
+    harrow (neg (x == y)); apply ImplI.
+    harrow (neg (y == z)); apply ImplI.
+    harrow (x == z).
+    apply ImplE with (y == z).
+    apply ImplE with (x == y).
+    2-3:axiom.
+    apply AllE with (p:=(fun z => Impl (x == y) (Impl (y == z) (x == z)))).
+    apply AllE with (p:=(fun y => All (fun z => Impl (x == y) (Impl (y == z) (x == z))))).
+    apply AllE with (p:=(fun x:A =>All (fun y => All (fun z => Impl (x == y) (Impl (y == z) (x == z)))))).
+    axiom.
+    apply Eq_trans.
+Qed.
+
+Lemma arith_nnt f: arith f -> deriv arith (nnt f).
+Proof.
+  intros H.
+  destruct H; simpl.
+  - apply AllI. intros a.
+    apply ImplI.
+    harrow (neg (0 == S a)).
+    apply AllE with (p:=fun x=> neg (0 == S x)).
+    axiom.
+    apply Arith_zero_n_succ.
+  - admit.
+  - admit.
+Admitted.
+
+(** 4.2.2 *)
+Lemma peano_to_nnt_heyting f: deriv peano f -> deriv (nnt_context heyting) (nnt f).
+Proof.
+  intros H; now apply excluded_middle_elim.
+Qed.
+
 (** 5.1.1 *)
 Fixpoint intf f : Prop :=
   match f with
@@ -360,4 +425,24 @@ Proof.
   - intros x y H; injection H; easy.
   - intros P P0 PS n.
     induction n; firstorder.
+Qed.
+
+Lemma sound_nnt_heyting : sound_context (nnt_context heyting).
+Proof.
+  intros f H.
+  apply nnt_context_union in H.
+  destruct H as [H|H]; destruct H as (g,(E,H)); symmetry in E; destruct E.
+  - apply arith_nnt,intf_sound in H; try easy.
+    apply sound_arith.
+  - apply equality_nnt,intf_sound in H; try easy.
+    apply sound_equality.
+Qed.
+
+(** 5.4.1 *)
+Lemma peano_consistency: not (deriv peano Fa).
+Proof.
+  intros H.
+  apply peano_to_nnt_heyting,intf_sound in H.
+  - easy.
+  - apply sound_nnt_heyting.
 Qed.
