@@ -258,6 +258,7 @@ Qed.
 Inductive classic : form -> Prop :=
   Cem P : classic (Or P (Impl P Fa)).
 
+(* Intuitionistic de Morgan *)
 Lemma neg_or L A B : deriv L (Impl (neg (Or A B)) (And (neg A) (neg B))).
 Proof.
   apply ImplI, AndI; apply ImplI; harrow (Or A B).
