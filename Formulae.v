@@ -39,6 +39,8 @@ Hint Constructors deriv : derivdb.
 (* Very small tactics allowing to search in the context for a given hypothesis. *)
 Ltac explore_context := repeat ((left; easy) + right).
 Ltac axiom := apply Ax; explore_context.
+(* Apply an arrow that is in the context *)
+Ltac harrow p := apply ImplE with p; only 1:axiom.
 
 Definition classical := fun hyp => exists A:form, hyp = Or A (Impl A Fa).
 
@@ -49,20 +51,23 @@ Definition neg := fun x => Impl x Fa.
 Lemma drinker (bar:Type) (barfly:bar) (drinks:bar->Prop) :
   deriv classical (Ex (fun p =>Impl (Atom (drinks p)) (All (fun q => Atom (drinks q))))).
 Proof.
-  apply OrE with (p:=(All (fun p => Atom (drinks p)))) (q:= neg (All (fun p => Atom (drinks p)))).
-  - apply Ax. exists ((All (fun p => Atom (drinks p)))); easy.
-  - apply ExI with (a:=barfly).
-    apply ImplI; axiom.
-  - apply ImplE with (p:=Ex (fun x => neg (Atom (drinks x)))). (* There exists someone not drinking *)
-    + apply ImplI.
-      apply ExE with _ (fun x : bar => neg (Atom (drinks x))).
-      * axiom.
-      * intros a.
-        apply ExI with a.
-        apply ImplI, FaE.
-        apply ImplE with (p:=(Atom (drinks a))); axiom.
-    + admit.
-Admitted.
+  apply OrE with (p:=(Ex (fun p => neg (Atom (drinks p))))) (q:= neg (Ex (fun p => neg (Atom (drinks p))))).
+  - apply Ax; exists (Ex (fun p => neg (Atom (drinks p)))); easy.
+  - apply ExE with (p:=(fun p : bar => neg (Atom (drinks p)))).
+    + axiom.
+    + intros a.
+      apply ExI with a.
+      apply ImplI, FaE.
+      harrow (Atom (drinks a)); axiom.
+  - apply ExI with barfly, ImplI, AllI; intros a.
+    apply OrE with (p:=Atom (drinks a)) (q:= neg (Atom (drinks a))).
+    + apply Ax; right; right; exists (Atom (drinks a)); easy.
+    + axiom.
+    + apply FaE.
+      harrow (Ex (fun p : bar => neg (Atom (drinks p)))).
+      apply ExI with a.
+      axiom.
+Qed.
 
 (* The inclusion of contexts. Useful to state intermediate lemmas. *)
 Definition Included (X Y: context) := forall a, X a -> Y a.
@@ -126,9 +131,6 @@ Proof.
     + now destruct H0.
     + eauto with derivdb.
 Qed.
-
-(* Apply an arrow that is in the context *)
-Ltac harrow p := apply ImplE with p; only 1:axiom.
 
 (** 2.2.1 *)
 Lemma double_elimination L f : deriv L (neg (neg (nnt f))) -> deriv L (nnt f).
