@@ -105,10 +105,7 @@ Qed.
 Lemma deriv_substitution (L L':context) f : deriv L f -> ProvableFrom L L' -> deriv L' f.
 Proof.
   intros H; revert L'; induction H; intros L' I; eauto using extend_mon_ProvableFrom with derivdb.
-  apply OrE with p q.
-  - firstorder.
-  - now apply IHderiv2, extend_mon_ProvableFrom.
-  - now apply IHderiv3, extend_mon_ProvableFrom.
+  apply OrE with p q; firstorder using extend_mon_ProvableFrom.
 Qed.
 
 (** 2.1.1 *)
