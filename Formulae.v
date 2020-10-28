@@ -88,8 +88,10 @@ Proof.
   apply OrE with p q; firstorder.
 Qed.
 
+(* All formulas in L are provable from L' *)
 Definition ProvableFrom (L L':context) := forall f, L f -> deriv L' f.
 
+(* extend is monotonic w.r.t. the ProvableFrom predicate *)
 Lemma extend_mon_ProvableFrom X Y p : ProvableFrom X Y -> ProvableFrom (extend X p) (extend Y p).
 Proof.
   intros H x R; destruct R.
@@ -121,6 +123,7 @@ Fixpoint nnt (x:form) :=
   | All p => All (fun x => nnt (p x))
   | Ex p => neg (neg (Ex (fun x => nnt (p x)))) end.
 
+(* One can "extend" the context if possible *)
 Lemma extend_context L p f : deriv L p -> deriv (extend L p) f -> deriv L f.
 Proof.
   intros H x.
