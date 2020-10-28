@@ -364,12 +364,21 @@ Proof.
   intros H.
   destruct H; simpl.
   - apply AllI. intros a.
-    apply ImplI.
-    harrow (neg (0 == S a)).
+    apply remove_negneg.
     apply AllE with (p:=fun x=> neg (0 == S x)).
     axiom.
     apply Arith_zero_n_succ.
-  - admit.
+  - apply AllI; intros x; apply AllI; intros y.
+    apply ImplI, ImplI.
+    harrow (neg (S x == S y)).
+    apply ImplI.
+    harrow (x == y).
+    apply ImplE with (S x == S y).
+    + apply AllE with (p:= fun y => (Impl (S x == S y) (x == y))).
+      apply AllE with (p:= fun x => (All (fun y0 : nat => Impl (S x == S y0) (x == y0)))).
+      axiom.
+      apply Arith_succ_inj.
+    + axiom.
   - admit.
 Admitted.
 
