@@ -333,8 +333,7 @@ Qed.
 (** 5.2.1 *)
 Lemma intf_sound L f : sound_context L -> deriv L f -> intf f.
 Proof.
-  intros H D.
-  induction D; firstorder using sound_extend.
+  induction 2; firstorder using sound_extend.
 Qed.
 
 (** 5.3.1.1 *)
