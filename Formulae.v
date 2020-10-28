@@ -342,8 +342,6 @@ Proof.
   intros x Ex.
   destruct Ex.
   - easy.
-  - intros x y H.
-    now destruct H.
-  - intros x y z E1 E2.
-    now destruct E1,E2.
+  - now intros x y [].
+  - now intros x y z [] [].
 Qed.
