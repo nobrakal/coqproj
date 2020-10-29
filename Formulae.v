@@ -291,18 +291,24 @@ Qed.
 
 Notation "a == b" := (Atom (a = b)) (at level 90).
 
+Definition all {A B} (p:A -> B -> form) := fun x => All (p x).
+Definition all2 {A B C} (p:A -> B -> C -> form) := (all (fun x => all (p x))).
+
 Definition Eq_refl_F {A} (x:A) := x == x.
 Definition Eq_sym_F {A} (x y:A) := Impl (x == y) (y == x).
-Definition Eq_trans_F {A} (x y z:A) :=  Impl (x == y) (Impl (y == z) (x == z)).
+Definition Eq_trans_F {A} (x y z:A) := Impl (x == y) (Impl (y == z) (x == z)).
 
 Inductive equality (A:Type) : form -> Prop :=
 | Eq_refl : equality A (@All A Eq_refl_F)
-| Eq_sym : equality A (All (fun x => @All A (Eq_sym_F x)))
-| Eq_trans : equality A (All (fun x => All (fun y => @All A (Eq_trans_F x y)))).
+| Eq_sym : equality A (@All A (all Eq_sym_F))
+| Eq_trans : equality A (@All A (all2 Eq_trans_F)).
+
+Definition Arith_zero_n_succ_F n := neg (0 == S n).
+Definition Arith_succ_inj_F n m := Impl (S n == S m) (n == m).
 
 Inductive arith : form -> Prop :=
-| Arith_zero_n_succ : arith (All (fun n => neg (0 == S n)))
-| Arith_succ_inj : arith (All (fun n => All (fun m => Impl (S n == S m) (n == m))))
+| Arith_zero_n_succ : arith (All Arith_zero_n_succ_F)
+| Arith_succ_inj : arith (All (all Arith_succ_inj_F))
 | Arith_ind : arith (All (fun (P :nat -> Prop) => Impl (Atom (P 0)) (Impl (All (fun n =>  Impl (Atom (P n)) (Atom (P (S n))))) (All (fun n => Atom (P n)))))).
 
 Definition heyting := union arith (equality nat).
@@ -326,12 +332,11 @@ Proof.
     apply Eq_refl.
   - apply AllI; intros x; apply AllI; intros y.
     apply ImplI, ImplI.
-    harrow (neg (x==y)).
-    apply ImplI.
+    harrow (neg (x==y)); apply ImplI.
     harrow (y == x).
     apply ImplE with (x == y).
     + apply AllE with (p:=Eq_sym_F x).
-      apply AllE with (p:=fun x => All (Eq_sym_F x)).
+      apply AllE with (p:=all (Eq_sym_F)).
       axiom.
       apply Eq_sym.
     + axiom.
@@ -344,8 +349,8 @@ Proof.
     apply ImplE with (x == y).
     2-3:axiom.
     apply AllE with (p:=Eq_trans_F x y).
-    apply AllE with (p:=(fun y => All (Eq_trans_F x y))).
-    apply AllE with (p:=(fun x =>All (fun y => All (Eq_trans_F x y)))).
+    apply AllE with (p:=all (Eq_trans_F x)).
+    apply AllE with (p:=all2 Eq_trans_F).
     axiom.
     apply Eq_trans.
 Qed.
@@ -356,7 +361,7 @@ Proof.
   destruct H; simpl.
   - apply AllI. intros a.
     apply remove_negneg.
-    apply AllE with (p:=fun x=> neg (0 == S x)).
+    apply AllE with (p:=Arith_zero_n_succ_F).
     axiom.
     apply Arith_zero_n_succ.
   - apply AllI; intros x; apply AllI; intros y.
@@ -365,8 +370,8 @@ Proof.
     apply ImplI.
     harrow (x == y).
     apply ImplE with (S x == S y).
-    + apply AllE with (p:= fun y => (Impl (S x == S y) (x == y))).
-      apply AllE with (p:= fun x => (All (fun y0 : nat => Impl (S x == S y0) (x == y0)))).
+    + apply AllE with (p:=Arith_succ_inj_F x).
+      apply AllE with (p:=all Arith_succ_inj_F).
       axiom.
       apply Arith_succ_inj.
     + axiom.
