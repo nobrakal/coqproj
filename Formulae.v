@@ -135,13 +135,11 @@ Qed.
 (** 2.2.1 *)
 Lemma double_elimination L f : deriv L (neg (neg (nnt f))) -> deriv L (nnt f).
 Proof.
-  revert L; induction f; intros L D; simpl in *.
+  revert L; induction f; intros L D; simpl in *; apply (extend_context _ _ _ D).
   - eauto with derivdb.
-  - apply extend_context with (p:=neg (neg Fa)); try easy.
-    harrow (neg Fa).
+  - harrow (neg Fa).
     apply ImplI; axiom.
-  - apply extend_context with (p:=(neg (neg (And (nnt f1) (nnt f2))))); try easy.
-    apply AndI.
+  - apply AndI.
     + apply IHf1, ImplI.
       harrow (neg (And (nnt f1) (nnt f2))).
       apply ImplI.
@@ -152,33 +150,28 @@ Proof.
       apply ImplI.
       harrow (nnt f2).
       apply AndER with (p:= nnt f1); axiom.
-  - apply extend_context with (p:=(neg (neg (neg (neg (Or (nnt f1) (nnt f2))))))); try easy.
-    apply ImplI.
+  - apply ImplI.
     harrow (neg (neg (neg (Or (nnt f1) (nnt f2))))).
     apply ImplI.
     harrow (neg (Or (nnt f1) (nnt f2))).
     axiom.
-  - apply extend_context with (p:=(neg (neg (Impl (nnt f1) (nnt f2))))); try easy.
-    apply ImplI, IHf2, ImplI.
+  - apply ImplI, IHf2, ImplI.
     harrow (neg (Impl (nnt f1) (nnt f2))).
     apply ImplI.
     harrow (nnt f2); harrow (nnt f1); axiom.
-  - apply extend_context with (p:=(neg (neg (All (fun x : A => nnt (f x)))))); try easy.
-    apply AllI; intros a.
+  - apply AllI; intros a.
     apply H, ImplI.
     harrow (neg (All (fun x : A => nnt (f x)))).
     apply ImplI.
     harrow (nnt (f a)).
     apply AllE with (p:= fun x => nnt (f x)).
     axiom.
-  - apply extend_context with (neg (neg (neg (neg (Ex (fun x : A => nnt (f x))))))); try easy.
-    apply ImplI.
+  - apply ImplI.
     harrow (neg (neg (neg (Ex (fun x : A => nnt (f x)))))).
     apply ImplI.
     harrow (neg (Ex (fun x : A => nnt (f x)))).
     axiom.
-  - apply extend_context with (neg (neg (neg (neg (Atom P))))); try easy.
-    apply ImplI.
+  - apply ImplI.
     harrow (neg (neg (neg (Atom P)))).
     apply ImplI.
     harrow (neg (Atom P)).
