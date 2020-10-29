@@ -177,10 +177,13 @@ Proof.
     axiom.
 Qed.
 
+(* Apply nnt to the whole context. *)
 Definition nnt_context L := fun p => exists p', p=nnt p' /\ L p'.
 
+(* A definition of equivalent context, useful in lemmas.*)
 Definition EquivContext (X Y: context) := forall p, X p <-> Y p.
 
+(* nnt distributes over extend. *)
 Lemma nnt_context_extend L p : EquivContext (nnt_context (extend L p)) (extend (nnt_context L) (nnt p)).
 Proof.
   intros x.
@@ -189,6 +192,7 @@ Proof.
   - firstorder; destruct H; exists p; firstorder.
 Qed.
 
+(* One can replace a context with an equivalent one. *)
 Lemma replace_context L L' f: EquivContext L L' -> deriv L f -> deriv L' f.
 Proof.
   intros E H.
@@ -268,8 +272,10 @@ Proof.
     axiom.
 Qed.
 
+(* The union of contexts. *)
 Definition union (L L' : context) := fun y => L y \/ L' y.
 
+(* nnt_context distributes over union. *)
 Lemma nnt_context_union L L' :
   EquivContext (nnt_context (union L L')) (union (nnt_context L) (nnt_context L')).
 Proof. firstorder. Qed.
@@ -289,15 +295,19 @@ Proof.
     + now apply Ax.
 Qed.
 
+(* A (needed) notation for equality. *)
 Notation "a == b" := (Atom (a = b)) (at level 90).
 
+(* Some high order for forall quantification. *)
 Definition all {A B} (p:A -> B -> form) := fun x => All (p x).
 Definition all2 {A B C} (p:A -> B -> C -> form) := (all (fun x => all (p x))).
 
+(* Facotrize out the formulas *)
 Definition Eq_refl_F {A} (x:A) := x == x.
 Definition Eq_sym_F {A} (x y:A) := Impl (x == y) (y == x).
 Definition Eq_trans_F {A} (x y z:A) := Impl (x == y) (Impl (y == z) (x == z)).
 
+(* The equality axioms. *)
 Inductive equality (A:Type) : form -> Prop :=
 | Eq_refl : equality A (@All A Eq_refl_F)
 | Eq_sym : equality A (@All A (all Eq_sym_F))
@@ -306,12 +316,15 @@ Inductive equality (A:Type) : form -> Prop :=
 Definition Arith_zero_n_succ_F n := neg (0 == S n).
 Definition Arith_succ_inj_F n m := Impl (S n == S m) (n == m).
 
+(* The axioms of arithmetic. *)
 Inductive arith : form -> Prop :=
 | Arith_zero_n_succ : arith (All Arith_zero_n_succ_F)
 | Arith_succ_inj : arith (All (all Arith_succ_inj_F))
 | Arith_ind : arith (All (fun (P :nat -> Prop) => Impl (Atom (P 0)) (Impl (All (fun n =>  Impl (Atom (P n)) (Atom (P (S n))))) (All (fun n => Atom (P n)))))).
 
+(* The Heyting arithmetic. *)
 Definition heyting := union arith (equality nat).
+(* The Peano arithmetic. *)
 Definition peano := union classic heyting.
 
 Lemma remove_negneg L f : deriv L f -> deriv L (neg (neg f)).
@@ -441,6 +454,7 @@ Proof.
     induction n; firstorder.
 Qed.
 
+(* nnt_context of heyting is sound. *)
 Lemma sound_nnt_heyting : sound_context (nnt_context heyting).
 Proof.
   intros f H.
