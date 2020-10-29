@@ -135,7 +135,7 @@ Qed.
 (** 2.2.1 *)
 Lemma double_elimination L f : deriv L (neg (neg (nnt f))) -> deriv L (nnt f).
 Proof.
-  revert L; induction f; intros L D; simpl in *; apply (extend_context _ _ _ D).
+  revert L; induction f; intros L D; simpl in *; apply (extend_context _ _ _ D); try apply ImplI.
   - eauto with derivdb.
   - harrow (neg Fa).
     apply ImplI; axiom.
@@ -150,12 +150,11 @@ Proof.
       apply ImplI.
       harrow (nnt f2).
       apply AndER with (p:= nnt f1); axiom.
-  - apply ImplI.
-    harrow (neg (neg (neg (Or (nnt f1) (nnt f2))))).
+  - harrow (neg (neg (neg (Or (nnt f1) (nnt f2))))).
     apply ImplI.
     harrow (neg (Or (nnt f1) (nnt f2))).
     axiom.
-  - apply ImplI, IHf2, ImplI.
+  - apply IHf2, ImplI.
     harrow (neg (Impl (nnt f1) (nnt f2))).
     apply ImplI.
     harrow (nnt f2); harrow (nnt f1); axiom.
@@ -166,13 +165,11 @@ Proof.
     harrow (nnt (f a)).
     apply AllE with (p:= fun x => nnt (f x)).
     axiom.
-  - apply ImplI.
-    harrow (neg (neg (neg (Ex (fun x : A => nnt (f x)))))).
+  - harrow (neg (neg (neg (Ex (fun x : A => nnt (f x)))))).
     apply ImplI.
     harrow (neg (Ex (fun x : A => nnt (f x)))).
     axiom.
-  - apply ImplI.
-    harrow (neg (neg (neg (Atom P)))).
+  - harrow (neg (neg (neg (Atom P)))).
     apply ImplI.
     harrow (neg (Atom P)).
     apply ImplI.
