@@ -283,7 +283,7 @@ Proof.
   - intros x E.
     apply nnt_context_union in E.
     destruct E.
-    + destruct H0 as (y,(E,Hy)); symmetry in E; destruct E.
+    + destruct H0 as (y,(E,Hy)); rewrite E.
       destruct Hy.
       apply nnt_classic.
     + now apply Ax.
@@ -291,10 +291,14 @@ Qed.
 
 Notation "a == b" := (Atom (a = b)) (at level 90).
 
+Definition Eq_refl_F {A} (x:A) := x == x.
+Definition Eq_sym_F {A} (x y:A) := Impl (x == y) (y == x).
+Definition Eq_trans_F {A} (x y z:A) :=  Impl (x == y) (Impl (y == z) (x == z)).
+
 Inductive equality (A:Type) : form -> Prop :=
-| Eq_refl : equality A (All (fun x:A => x == x))
-| Eq_sym : equality A (All (fun x:A => All (fun y => Impl (x == y) (y == x))))
-| Eq_trans : equality A (All (fun x:A =>All (fun y => All (fun z => Impl (x == y) (Impl (y == z) (x == z)))))).
+| Eq_refl : equality A (@All A Eq_refl_F)
+| Eq_sym : equality A (All (fun x => @All A (Eq_sym_F x)))
+| Eq_trans : equality A (All (fun x => All (fun y => @All A (Eq_trans_F x y)))).
 
 Inductive arith : form -> Prop :=
 | Arith_zero_n_succ : arith (All (fun n => neg (0 == S n)))
@@ -317,7 +321,7 @@ Proof.
   intros H; destruct H.
   - apply AllI; intros a.
     apply remove_negneg.
-    apply AllE with (p:= fun x => x == x).
+    apply AllE with (p:=Eq_refl_F).
     axiom.
     apply Eq_refl.
   - apply AllI; intros x; apply AllI; intros y.
@@ -326,8 +330,8 @@ Proof.
     apply ImplI.
     harrow (y == x).
     apply ImplE with (x == y).
-    + apply AllE with (p:=(fun y => Impl (x == y) (y == x))).
-      apply AllE with (p:=(fun x:A => All (fun y => Impl (x == y) (y == x)))).
+    + apply AllE with (p:=Eq_sym_F x).
+      apply AllE with (p:=fun x => All (Eq_sym_F x)).
       axiom.
       apply Eq_sym.
     + axiom.
@@ -339,9 +343,9 @@ Proof.
     apply ImplE with (y == z).
     apply ImplE with (x == y).
     2-3:axiom.
-    apply AllE with (p:=(fun z => Impl (x == y) (Impl (y == z) (x == z)))).
-    apply AllE with (p:=(fun y => All (fun z => Impl (x == y) (Impl (y == z) (x == z))))).
-    apply AllE with (p:=(fun x:A =>All (fun y => All (fun z => Impl (x == y) (Impl (y == z) (x == z)))))).
+    apply AllE with (p:=Eq_trans_F x y).
+    apply AllE with (p:=(fun y => All (Eq_trans_F x y))).
+    apply AllE with (p:=(fun x =>All (fun y => All (Eq_trans_F x y)))).
     axiom.
     apply Eq_trans.
 Qed.
