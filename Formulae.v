@@ -375,8 +375,17 @@ Proof.
       axiom.
       apply Arith_succ_inj.
     + axiom.
-  - admit.
-Admitted.
+  - apply AllI; intros P.
+    apply ImplI, ImplI.
+    apply AllI; intros x.
+    induction x.
+    + axiom.
+    + apply (extend_context  _ _ _ IHx).
+      apply ImplE with (p:=neg (neg (Atom (P x)))).
+      * apply AllE with (p:=(fun x0 => Impl (neg (neg (Atom (P x0)))) (neg (neg (Atom (P (S x0))))))).
+        axiom.
+      * axiom.
+Qed.
 
 (** 4.2.2 *)
 Lemma peano_to_nnt_heyting f: deriv peano f -> deriv (nnt_context heyting) (nnt f).
