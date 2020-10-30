@@ -139,7 +139,7 @@ Fixpoint nnt (x:form) :=
   | All p => All (fun x => nnt (p x))
   | Ex p => neg (neg (Ex (fun x => nnt (p x)))) end.
 
-(* One can "extend" the context if possible *)
+(* Useful to add an hypothesis in the context *)
 Lemma extend_context L p f : deriv L p -> deriv (extend L p) f -> deriv L f.
 Proof.
   intros H x.
