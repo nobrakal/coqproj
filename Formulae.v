@@ -139,6 +139,8 @@ Fixpoint nnt (x:form) :=
   | All p => All (fun x => nnt (p x))
   | Ex p => neg (neg (Ex (fun x => nnt (p x)))) end.
 
+Definition lift_nnt {A} (p:A -> form) := fun x => nnt (p x).
+
 (* Useful to add an hypothesis in the context *)
 Lemma extend_context L p f : deriv L p -> deriv (extend L p) f -> deriv L f.
 Proof.
@@ -177,14 +179,14 @@ Proof.
     harrow (nnt f2); harrow (nnt f1); axiom.
   - apply AllI; intros a.
     apply H, ImplI.
-    harrow (neg (All (fun x : A => nnt (f x)))).
+    harrow (neg (All (lift_nnt f))).
     apply ImplI.
     harrow (nnt (f a)).
-    apply AllE with (p:= fun x => nnt (f x)).
+    apply AllE with (p:=(lift_nnt f)).
     axiom.
-  - harrow (neg (neg (neg (Ex (fun x : A => nnt (f x)))))).
+  - harrow (neg (neg (neg (Ex (lift_nnt f))))).
     apply ImplI.
-    harrow (neg (Ex (fun x : A => nnt (f x)))).
+    harrow (neg (Ex (lift_nnt f))).
     axiom.
   - harrow (neg (neg (neg (Atom P)))).
     apply ImplI.
@@ -197,7 +199,7 @@ Qed.
 (* Apply nnt to the whole context. *)
 Definition nnt_context L := fun p => exists p', p=nnt p' /\ L p'.
 
-(* A definition of equivalent context, useful in lemmas. *)
+(* A definition of equivalent contexts, useful in lemmas. *)
 Definition EquivContext (X Y: context) := forall p, X p <-> Y p.
 
 (* nnt distributes over extend. *)
@@ -243,20 +245,20 @@ Proof.
       intros x E; apply nnt_context_extend in E; firstorder.
   - apply ImplI.
     apply replace_context with (nnt_context (extend G p)); [apply nnt_context_extend | easy].
-  - apply extend_context with (All (fun x => nnt (p x))); try easy.
-    apply AllE with (p:=(fun x => nnt (p x))).
+  - apply extend_context with (All (lift_nnt p)); try easy.
+    apply AllE with (p:=(lift_nnt p)).
     axiom.
   - apply extend_context with (nnt (p a)); try easy.
     apply ImplI.
-    harrow (Ex (fun x => nnt (p x))).
+    harrow (Ex (lift_nnt p)).
     apply ExI with a; axiom.
   - apply double_elimination.
-    apply extend_context with (neg (neg (Ex (fun x => nnt (p x))))); try easy.
+    apply extend_context with (neg (neg (Ex (lift_nnt p)))); try easy.
     apply ImplI.
-    harrow (neg (Ex (fun x => nnt (p x)))).
+    harrow (neg (Ex (lift_nnt p))).
     apply ImplI.
     harrow (nnt q).
-    apply ExE with (p:= fun x => nnt (p x)).
+    apply ExE with (p:=lift_nnt p).
     + axiom.
     + intros a.
       specialize H1 with a.
