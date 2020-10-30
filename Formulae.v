@@ -72,6 +72,7 @@ Qed.
 (* The inclusion of contexts. Useful to state intermediate lemmas. *)
 Definition Included (X Y: context) := forall a, X a -> Y a.
 
+(* Any context is included in its extension. *)
 Lemma Included_extend X p: Included X (extend X p).
 Proof. firstorder. Qed.
 
@@ -180,7 +181,7 @@ Qed.
 (* Apply nnt to the whole context. *)
 Definition nnt_context L := fun p => exists p', p=nnt p' /\ L p'.
 
-(* A definition of equivalent context, useful in lemmas.*)
+(* A definition of equivalent context, useful in lemmas. *)
 Definition EquivContext (X Y: context) := forall p, X p <-> Y p.
 
 (* nnt distributes over extend. *)
@@ -299,8 +300,8 @@ Qed.
 Notation "a == b" := (Atom (a = b)) (at level 90).
 
 (* Some high order for forall quantification. *)
-Definition all {A B} (p:A -> B -> form) := fun x => All (p x).
-Definition all2 {A B C} (p:A -> B -> C -> form) := (all (fun x => all (p x))).
+Definition curry  {A B} (p:A -> B -> form) := fun '(x,y) => p x y.
+Definition curry2 {A B C} (p:A -> B -> C -> form) := fun '(x,y,z) => p x y z.
 
 (* Facotrize out the formulas *)
 Definition Eq_refl_F {A} (x:A) := x == x.
@@ -310,8 +311,8 @@ Definition Eq_trans_F {A} (x y z:A) := Impl (x == y) (Impl (y == z) (x == z)).
 (* The equality axioms. *)
 Inductive equality (A:Type) : form -> Prop :=
 | Eq_refl : equality A (@All A Eq_refl_F)
-| Eq_sym : equality A (@All A (all Eq_sym_F))
-| Eq_trans : equality A (@All A (all2 Eq_trans_F)).
+| Eq_sym : equality A (@All (A*A) (curry Eq_sym_F))
+| Eq_trans : equality A (@All (A*A*A) (curry2 Eq_trans_F)).
 
 Definition Arith_zero_n_succ_F n := neg (0 == S n).
 Definition Arith_succ_inj_F n m := Impl (S n == S m) (n == m).
@@ -319,7 +320,7 @@ Definition Arith_succ_inj_F n m := Impl (S n == S m) (n == m).
 (* The axioms of arithmetic. *)
 Inductive arith : form -> Prop :=
 | Arith_zero_n_succ : arith (All Arith_zero_n_succ_F)
-| Arith_succ_inj : arith (All (all Arith_succ_inj_F))
+| Arith_succ_inj : arith (All (curry Arith_succ_inj_F))
 | Arith_ind : arith (All (fun (P :nat -> Prop) => Impl (Atom (P 0)) (Impl (All (fun n =>  Impl (Atom (P n)) (Atom (P (S n))))) (All (fun n => Atom (P n)))))).
 
 (* The Heyting arithmetic. *)
@@ -343,17 +344,16 @@ Proof.
     apply AllE with (p:=Eq_refl_F).
     axiom.
     apply Eq_refl.
-  - apply AllI; intros x; apply AllI; intros y.
+  - apply AllI; intros (x,y).
     apply ImplI, ImplI.
     harrow (neg (x==y)); apply ImplI.
     harrow (y == x).
     apply ImplE with (x == y).
-    + apply AllE with (p:=Eq_sym_F x).
-      apply AllE with (p:=all (Eq_sym_F)).
+    + apply AllE with (p:=curry Eq_sym_F) (a:=(x,y)).
       axiom.
       apply Eq_sym.
     + axiom.
-  - apply AllI; intros x; apply AllI; intros y; apply AllI; intros z.
+  - apply AllI; intros ((x,y),z).
     apply ImplI, ImplI, ImplI.
     harrow (neg (x == y)); apply ImplI.
     harrow (neg (y == z)); apply ImplI.
@@ -361,9 +361,7 @@ Proof.
     apply ImplE with (y == z).
     apply ImplE with (x == y).
     2-3:axiom.
-    apply AllE with (p:=Eq_trans_F x y).
-    apply AllE with (p:=all (Eq_trans_F x)).
-    apply AllE with (p:=all2 Eq_trans_F).
+    apply AllE with (p:=curry2 Eq_trans_F) (a:=((x,y),z)).
     axiom.
     apply Eq_trans.
 Qed.
@@ -377,14 +375,13 @@ Proof.
     apply AllE with (p:=Arith_zero_n_succ_F).
     axiom.
     apply Arith_zero_n_succ.
-  - apply AllI; intros x; apply AllI; intros y.
+  - apply AllI; intros (x,y).
     apply ImplI, ImplI.
     harrow (neg (S x == S y)).
     apply ImplI.
     harrow (x == y).
     apply ImplE with (S x == S y).
-    + apply AllE with (p:=Arith_succ_inj_F x).
-      apply AllE with (p:=all Arith_succ_inj_F).
+    + apply AllE with (p:=curry Arith_succ_inj_F) (a:=(x,y)).
       axiom.
       apply Arith_succ_inj.
     + axiom.
