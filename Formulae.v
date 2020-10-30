@@ -327,7 +327,7 @@ Definition Eq_refl_F {A} (x:A) := x == x.
 Definition Eq_sym_F {A} (x y:A) := Impl (x == y) (y == x).
 Definition Eq_trans_F {A} (x y z:A) := Impl (x == y) (Impl (y == z) (x == z)).
 
-(* The equality axioms. *)
+(** 4.1.1 *)
 Inductive equality (A:Type) : form -> Prop :=
 | Eq_refl : equality A (@All A Eq_refl_F)
 | Eq_sym : equality A (@All (A*A) (curry Eq_sym_F))
@@ -336,7 +336,7 @@ Inductive equality (A:Type) : form -> Prop :=
 Definition Arith_zero_n_succ_F n := neg (0 == S n).
 Definition Arith_succ_inj_F n m := Impl (S n == S m) (n == m).
 
-(* The axioms of arithmetic. *)
+(** 4.1.2 *)
 Inductive arith : form -> Prop :=
 | Arith_zero_n_succ : arith (All Arith_zero_n_succ_F)
 | Arith_succ_inj : arith (All (curry Arith_succ_inj_F))
