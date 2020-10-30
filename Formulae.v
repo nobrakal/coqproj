@@ -218,7 +218,7 @@ Qed.
 
 (** 2.2.2 *)
 (* The soundness is almost trivial. We use the double-negation elimination when a witness is needed. *)
-Lemma ntt_soundness L f : deriv L f -> deriv (nnt_context L) (nnt f).
+Lemma nnt_soundness L f : deriv L f -> deriv (nnt_context L) (nnt f).
 Proof.
   induction 1; simpl in *.
   1-2:eauto with derivdb.
@@ -303,7 +303,7 @@ Lemma excluded_middle_elim L f : deriv (union classic L) f -> deriv (nnt_context
 Proof.
   intros H.
   apply deriv_substitution with (L:=nnt_context (union classic L)).
-  - now apply ntt_soundness.
+  - now apply nnt_soundness.
   - intros x E.
     apply nnt_context_union in E.
     destruct E.
