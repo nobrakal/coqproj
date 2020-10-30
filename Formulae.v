@@ -243,17 +243,17 @@ Proof.
       intros x E; apply nnt_context_extend in E; firstorder.
   - apply ImplI.
     apply replace_context with (nnt_context (extend G p)); [apply nnt_context_extend | easy].
-  - apply extend_context with (All (fun x : A => nnt (p x))); try easy.
-    apply AllE with (p:=(fun x : A => nnt (p x))).
+  - apply extend_context with (All (fun x => nnt (p x))); try easy.
+    apply AllE with (p:=(fun x => nnt (p x))).
     axiom.
   - apply extend_context with (nnt (p a)); try easy.
     apply ImplI.
-    harrow (Ex (fun x : A => nnt (p x))).
+    harrow (Ex (fun x => nnt (p x))).
     apply ExI with a; axiom.
   - apply double_elimination.
-    apply extend_context with (neg (neg (Ex (fun x : A => nnt (p x))))); try easy.
+    apply extend_context with (neg (neg (Ex (fun x => nnt (p x))))); try easy.
     apply ImplI.
-    harrow (neg (Ex (fun x : A => nnt (p x)))).
+    harrow (neg (Ex (fun x => nnt (p x)))).
     apply ImplI.
     harrow (nnt q).
     apply ExE with (p:= fun x => nnt (p x)).
@@ -353,7 +353,7 @@ Proof.
   axiom; apply Eq_refl.
 Qed.
 
-(* We can remove the double negation. *)
+(* We can prove the double negation of a formula from a proof of this formula. *)
 Lemma remove_negneg L f : deriv L f -> deriv L (neg (neg f)).
 Proof.
   intros H.
