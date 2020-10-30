@@ -331,6 +331,14 @@ Definition heyting := union arith (equality nat).
 (* The Peano arithmetic. *)
 Definition peano := union classic heyting.
 
+(** 4.1.3 *)
+Lemma plus_0_n : deriv (equality nat) (All (fun n => 0 + n == n)).
+Proof.
+  apply AllI; intros n; simpl.
+  apply AllE with (p:=Eq_refl_F).
+  axiom; apply Eq_refl.
+Qed.
+
 (* We can remove the double negation. *)
 Lemma remove_negneg L f : deriv L f -> deriv L (neg (neg f)).
 Proof.
@@ -445,8 +453,8 @@ Proof.
   intros x Ex.
   destruct Ex.
   - easy.
-  - now intros x y [].
-  - now intros x y z [] [].
+  - now intros (x,y) [].
+  - now intros ((x,y),z) [] [].
 Qed.
 
 (** 5.3.1.2 *)
@@ -455,7 +463,7 @@ Proof.
   intros x Ex.
   destruct Ex.
   - easy.
-  - intros x y H; injection H; easy.
+  - intros (x,y) H; injection H; easy.
   - intros P P0 PS n.
     induction n; firstorder.
 Qed.
