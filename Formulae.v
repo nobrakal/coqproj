@@ -125,12 +125,9 @@ Fixpoint nnt (x:form) :=
 Lemma extend_context L p f : deriv L p -> deriv (extend L p) f -> deriv L f.
 Proof.
   intros H x.
-  apply deriv_substitution with (L:= extend L p).
-  - easy.
-  - intros y I.
-    destruct I.
-    + now destruct H0.
-    + eauto with derivdb.
+  apply deriv_substitution with (L:= extend L p); try easy.
+  intros y I.
+  destruct I; [now destruct H0 | eauto with derivdb].
 Qed.
 
 (** 2.2.1 *)
