@@ -1,3 +1,15 @@
+(*
+   Negated Translation and Consistency of Arithmetic
+   Proof Assistants (MPRI 2-7-2)
+
+   Answers by Alexandre Moine (student number: 71600114).
+
+   I tried to split as much as possible my answers in lemmas and sub-lemmas.
+   Answers to specific questions are tagged with (** Question.Number *).
+   I also tried to use automation as much as possible. This leads to small proofs
+   but a long time is needed to prove some lemmas.
+*)
+
 Inductive form :=
 | Tr (* true *)
 | Fa (* absurd *)
@@ -199,7 +211,7 @@ Qed.
 Lemma replace_context L L' f: EquivContext L L' -> deriv L f -> deriv L' f.
 Proof.
   intros E H.
-  apply deriv_weakening with L; try easy; firstorder.
+  apply deriv_weakening with L; firstorder.
 Qed.
 
 (** 2.2.2 *)
@@ -324,7 +336,7 @@ Definition Arith_succ_inj_F n m := Impl (S n == S m) (n == m).
 Inductive arith : form -> Prop :=
 | Arith_zero_n_succ : arith (All Arith_zero_n_succ_F)
 | Arith_succ_inj : arith (All (curry Arith_succ_inj_F))
-| Arith_ind : arith (All (fun (P :nat -> Prop) => Impl (Atom (P 0)) (Impl (All (fun n =>  Impl (Atom (P n)) (Atom (P (S n))))) (All (fun n => Atom (P n)))))).
+| Arith_ind : arith (All (fun P => Impl (Atom (P 0)) (Impl (All (fun n =>  Impl (Atom (P n)) (Atom (P (S n))))) (All (fun n => Atom (P n)))))).
 
 (* The Heyting arithmetic. *)
 Definition heyting := union arith (equality nat).
