@@ -316,7 +316,7 @@ Qed.
 (* A (needed) notation for equality. *)
 Notation "a == b" := (Atom (a = b)) (at level 90).
 
-(* Some high order for forall quantification. *)
+(* Curryfication. *)
 Definition curry  {A B} (p:A -> B -> form) := fun '(x,y) => p x y.
 Definition curry2 {A B C} (p:A -> B -> C -> form) := fun '(x,y,z) => p x y z.
 
