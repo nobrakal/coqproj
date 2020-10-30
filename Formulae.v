@@ -8,10 +8,10 @@ Inductive form :=
 | Ex {A:Type} (_:A->form) (* Existential quantifier *)
 | Atom (_:Prop) (* Atomic propositions *).
 
-(* We give a name to the context *)
+(* We give a name to contexts. *)
 Definition context := form -> Prop.
 
-(* We can extend a context G by adding a proposition p *)
+(* We can extend a context G by adding a proposition p. *)
 Definition extend (G:context) (x:form) : context := fun y => x = y \/ G y.
 
 (** 1.1.1 *)
@@ -33,6 +33,7 @@ Inductive deriv:context -> form -> Prop :=
 | ExI  : forall (G:context) A p a, deriv G (p a) -> deriv G (@Ex A p)
 | ExE  : forall (G:context) A p q, deriv G (@Ex A p) -> (forall a, deriv (extend G (p a)) q) -> deriv G q.
 
+(* A hint database for automation. *)
 Create HintDb derivdb.
 Hint Constructors deriv : derivdb.
 
@@ -48,6 +49,7 @@ Definition classical := fun hyp => exists A:form, hyp = Or A (Impl A Fa).
 Definition neg := fun x => Impl x Fa.
 
 (** 1.1.2 *)
+(* This is the usual proof, by excluded middle over "Is there someone not drinking". *)
 Lemma drinker (bar:Type) (barfly:bar) (drinks:bar->Prop) :
   deriv classical (Ex (fun p =>Impl (Atom (drinks p)) (All (fun q => Atom (drinks q))))).
 Proof.
@@ -83,6 +85,7 @@ Proof.
 Qed.
 
 (** 1.2.1 *)
+(* Almost everything is automatic, using the monotonicity of extend over Included. *)
 Lemma deriv_weakening (L L':context) f : deriv L f -> Included L L' -> deriv L' f.
 Proof.
   intros H; revert L'; induction H; intros L' I; eauto using extend_mon_Included with derivdb.
@@ -103,6 +106,7 @@ Proof.
 Qed.
 
 (** 1.2.2 *)
+(* Almost everything is automatic, using the monotonicity of extend over ProvableFrom. *)
 Lemma deriv_substitution (L L':context) f : deriv L f -> ProvableFrom L L' -> deriv L' f.
 Proof.
   intros H; revert L'; induction H; intros L' I; eauto using extend_mon_ProvableFrom with derivdb.
@@ -131,6 +135,7 @@ Proof.
 Qed.
 
 (** 2.2.1 *)
+(* Very mechanical *)
 Lemma double_elimination L f : deriv L (neg (neg (nnt f))) -> deriv L (nnt f).
 Proof.
   revert L; induction f; intros L D; simpl in *; apply (extend_context _ _ _ D); try apply ImplI.
@@ -198,6 +203,7 @@ Proof.
 Qed.
 
 (** 2.2.2 *)
+(* The soundness is almost trivial. We use the double-negation elimination when a witness is needed. *)
 Lemma ntt_soundness L f : deriv L f -> deriv (nnt_context L) (nnt f).
 Proof.
   induction 1; simpl in *.
@@ -399,6 +405,7 @@ Proof.
 Qed.
 
 (** 4.2.2 *)
+(* We used the right definitions to get a simple proof. *)
 Lemma peano_to_nnt_heyting f: deriv peano f -> deriv (nnt_context heyting) (nnt f).
 Proof.
   intros H; now apply excluded_middle_elim.
@@ -426,6 +433,7 @@ Proof.
 Qed.
 
 (** 5.2.1 *)
+(* Trivial when knowing that one can extend a sound context with a sound formula. *)
 Lemma intf_sound L f : sound_context L -> deriv L f -> intf f.
 Proof.
   induction 2; firstorder using sound_extend.
