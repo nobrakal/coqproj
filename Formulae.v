@@ -328,11 +328,24 @@ Definition heyting := union arith (equality nat).
 (* The Peano arithmetic. *)
 Definition peano := union classic heyting.
 
+(* We can remove the double negation. *)
 Lemma remove_negneg L f : deriv L f -> deriv L (neg (neg f)).
 Proof.
   intros H.
   apply ImplI; harrow f.
   apply deriv_weakening with L; firstorder.
+Qed.
+
+(* Even on the two sides of the implication. *)
+Lemma remove_negneg_impl L a b : deriv L (Impl a b) -> deriv L (Impl (neg (neg a)) (neg (neg b))).
+Proof.
+  intros H.
+  apply ImplI, ImplI.
+  harrow (neg a); apply ImplI.
+  harrow b.
+  apply ImplE with (p:=a).
+  + apply deriv_weakening with L; [easy | firstorder].
+  + axiom.
 Qed.
 
 (** 4.2.1 *)
@@ -345,15 +358,11 @@ Proof.
     axiom.
     apply Eq_refl.
   - apply AllI; intros (x,y).
-    apply ImplI, ImplI.
-    harrow (neg (x==y)); apply ImplI.
-    harrow (y == x).
-    apply ImplE with (x == y).
-    + apply AllE with (p:=curry Eq_sym_F) (a:=(x,y)).
-      axiom.
-      apply Eq_sym.
-    + axiom.
-  - apply AllI; intros ((x,y),z).
+    apply remove_negneg_impl.
+    apply AllE with (p:=curry Eq_sym_F) (a:=(x,y)).
+    axiom.
+    apply Eq_sym.
+  - apply AllI; intros ((x,y),z). simpl.
     apply ImplI, ImplI, ImplI.
     harrow (neg (x == y)); apply ImplI.
     harrow (neg (y == z)); apply ImplI.
@@ -376,15 +385,10 @@ Proof.
     axiom.
     apply Arith_zero_n_succ.
   - apply AllI; intros (x,y).
-    apply ImplI, ImplI.
-    harrow (neg (S x == S y)).
-    apply ImplI.
-    harrow (x == y).
-    apply ImplE with (S x == S y).
-    + apply AllE with (p:=curry Arith_succ_inj_F) (a:=(x,y)).
-      axiom.
-      apply Arith_succ_inj.
-    + axiom.
+    apply remove_negneg_impl.
+    apply AllE with (p:=curry Arith_succ_inj_F) (a:=(x,y)).
+    axiom.
+    apply Arith_succ_inj.
   - apply AllI; intros P.
     apply ImplI, ImplI.
     apply AllI; intros x.
