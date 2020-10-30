@@ -8,6 +8,8 @@
    Answers to specific questions are tagged with (** Question.Number *).
    I also tried to use automation as much as possible. This leads to small proofs
    but a long time is needed to prove some lemmas.
+
+   Tested with Coq version 8.12.0.
 *)
 
 Inductive form :=
